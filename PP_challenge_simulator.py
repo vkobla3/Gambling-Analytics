@@ -12,14 +12,19 @@ def two_pick():
 def simulate_challenge(units):
     """Simulate a ladder challenge.
     Return the number of units gained."""
+    original_units = units
     days_won = 0
     units_of_profit = -units
     for day in range(7):                        # 7 days in a challenge
         if two_pick():
             days_won += 1
             units_of_profit += 3*units          # win 3x on successful two-pick
-            units *= 2                          # double units for next day
-            units_of_profit -= units            # two-pick entry cost for next day
+            if days_won < 6:
+                units *= 2                      # double units for next day if not on the last day
+            else:
+                units = 50*original_units       # otherwise, set units to 50x original units due to PrizePicks entry cap
+            if days_won < 7:
+                units_of_profit -= units        # two-pick entry cost for next day
         else:
             break                               # end challenge if two-pick fails
     return days_won, units_of_profit
@@ -36,7 +41,7 @@ def aggregate_challenge_simulator(units, trials):
             days_won, units_of_profit = simulate_challenge(units)
             total_days_won += days_won
             total_units_of_profit += units_of_profit
-            f.write('Challenge {}: {} days won, {} units of profit\n'.format(trial, days_won, units_of_profit))
+            f.write('Challenge {}: {} days won, {} units of profit\n'.format(trial+1, days_won, units_of_profit))
     return total_days_won/trials, total_units_of_profit
 
-print(aggregate_challenge_simulator(1, 100))
+print(aggregate_challenge_simulator(units=1, trials=100))
